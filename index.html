@@ -6,10 +6,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Modama Tracker</title>
-
+  
  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="icon" href="apple-touch-icon.png">
-  
+
   <!-- グラフ描画用ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -596,16 +596,8 @@
       const START_DATE_STR = '2026-08-12T21:07:00+09:00';
       const START_DATE = new Date(START_DATE_STR);
       
-      // アプリが保持する実際のデータ（Day 0のみを初期データとする）
-      let records = [
-        {
-          time: START_DATE_STR,
-          weight: 12.0,
-          length: 45.0,
-          thickness: 12.0,
-          isDay0: true
-        }
-      ];
+      // アプリが保持する実際のデータ（初期データは空とし、初回入力から蓄積する）
+      let records = [];
 
       // ==========================================
       // UI・画面遷移制御 (SPA Logic)
@@ -667,7 +659,7 @@
       // ダッシュボード更新ロジック
       // ==========================================
       function getDiffHTML(current, previous, unit) {
-        if (!previous) return '<span class="text-sub mono-num">比較データなし</span>';
+        if (!previous && previous !== 0) return '';
         const diff = current - previous;
         const percent = previous !== 0 ? (diff / previous) * 100 : 0;
         const sign = diff > 0 ? '▲ +' : (diff < 0 ? '▼ ' : '±');
@@ -676,9 +668,17 @@
       }
 
       function updateDashboard() {
-        if (records.length === 0) return;
+        if (records.length === 0) {
+            ['weight', 'length', 'thickness'].forEach(tab => {
+                document.getElementById(`dash-${tab}`).textContent = '--';
+                document.getElementById(`dash-time-${tab}`).textContent = '未測定';
+                document.getElementById(`diff-stats-${tab}`).innerHTML = '';
+            });
+            return;
+        }
         
         const latest = records[records.length - 1];
+        // 記録が2件以上ある場合のみ、1つ前のデータを比較対象(prev)とする
         const prev = records.length > 1 ? records[records.length - 2] : null;
 
         // 時刻のフォーマット (MM/DD HH:mm 測定)
@@ -688,10 +688,11 @@
         // --- 重量 ---
         document.getElementById('dash-weight').textContent = latest.weight.toFixed(2);
         document.getElementById('dash-time-weight').textContent = timeStr;
-        let weightStatsHTML = `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.weight, prev ? prev.weight : null, 'g')}</div>`;
         
-        // 吸水速度の計算
+        let weightStatsHTML = '';
         if (prev) {
+          weightStatsHTML += `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.weight, prev.weight, 'g')}</div>`;
+          // 吸水速度の計算
           const hours = (new Date(latest.time) - new Date(prev.time)) / (1000 * 60 * 60);
           if (hours > 0) {
             const speed = (latest.weight - prev.weight) / hours;
@@ -700,17 +701,17 @@
             weightStatsHTML += `<div class="diff-row"><span class="text-sub">重量変化速度</span><span class="font-bold ${sColor} mono-num">${sSign}${speed.toFixed(2)} g/h</span></div>`;
           }
         }
-        document.getElementById('diff-stats-weight').innerHTML = weightStatsHTML;
+        document.getElementById('diff-stats-weight').innerHTML = weightStatsHTML; // 初回は空になる
 
         // --- 長さ ---
         document.getElementById('dash-length').textContent = latest.length.toFixed(2);
         document.getElementById('dash-time-length').textContent = timeStr;
-        document.getElementById('diff-stats-length').innerHTML = `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.length, prev ? prev.length : null, 'mm')}</div>`;
+        document.getElementById('diff-stats-length').innerHTML = prev ? `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.length, prev.length, 'mm')}</div>` : '';
 
         // --- 厚さ ---
         document.getElementById('dash-thickness').textContent = latest.thickness.toFixed(2);
         document.getElementById('dash-time-thickness').textContent = timeStr;
-        document.getElementById('diff-stats-thickness').innerHTML = `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.thickness, prev ? prev.thickness : null, 'mm')}</div>`;
+        document.getElementById('diff-stats-thickness').innerHTML = prev ? `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.thickness, prev.thickness, 'mm')}</div>` : '';
       }
 
       // ==========================================
@@ -719,7 +720,16 @@
       let myChartInstance = null;
 
       function updateChart(rangeText = '1週') {
-        if (!myChartInstance || records.length === 0) return;
+        if (!myChartInstance) return;
+        
+        // データが0件の場合はグラフをクリアして終了
+        if (records.length === 0) {
+            myChartInstance.data.labels = [];
+            myChartInstance.data.datasets[0].data = [];
+            myChartInstance.data.datasets[1].data = [];
+            myChartInstance.update();
+            return;
+        }
 
         const now = new Date();
         let limitMs = 0;
@@ -799,21 +809,21 @@
         const timeElapsed = document.getElementById('header-time').textContent;
         const photoStatus = isPhotoTaken ? 'あり' : 'なし';
 
-        // 差分計算用ヘルパー（テキスト版）
+        // 差分計算用ヘルパー（前回データが存在しない場合は空文字を返す）
         const getDiffText = (cur, pre, unit) => {
-           if (!pre) return `[ 前回データなし ]`;
+           if (!pre && pre !== 0) return '';
            const diff = cur - pre;
            const percent = pre !== 0 ? (diff / pre) * 100 : 0;
            const sign = diff > 0 ? '▲ +' : (diff < 0 ? '▼ ' : '±');
-           return `[ 前回比: ${sign}${Math.abs(diff).toFixed(2)}${unit} (${sign}${Math.abs(percent).toFixed(1)}%) ]`;
+           return `\n[ 前回比: ${sign}${Math.abs(diff).toFixed(2)}${unit} (${sign}${Math.abs(percent).toFixed(1)}%) ]`;
         };
 
-        let speedText = '計算不能';
+        let speedText = '';
         if (prev) {
           const hours = (new Date(latest.time) - new Date(prev.time)) / (1000 * 60 * 60);
           if (hours > 0) {
             const speed = (latest.weight - prev.weight) / hours;
-            speedText = `${speed > 0 ? '+' : ''}${speed.toFixed(2)} g/h`;
+            speedText = `\n⏱ 重量変化速度: ${speed > 0 ? '+' : ''}${speed.toFixed(2)} g/h`;
           }
         }
 
@@ -821,15 +831,11 @@
 計測日時: ${dateStr}
 （浸水から ${timeElapsed}）
 
-⚖️ 重さ: ${latest.weight.toFixed(2)} g
-${getDiffText(latest.weight, prev ? prev.weight : null, 'g')}
-⏱ 重量変化速度: ${speedText}
+⚖️ 重さ: ${latest.weight.toFixed(2)} g${getDiffText(latest.weight, prev ? prev.weight : null, 'g')}${speedText}
 
-📏 長さ: ${latest.length.toFixed(2)} mm
-${getDiffText(latest.length, prev ? prev.length : null, 'mm')}
+📏 長さ: ${latest.length.toFixed(2)} mm${getDiffText(latest.length, prev ? prev.length : null, 'mm')}
 
-🧊 厚さ: ${latest.thickness.toFixed(2)} mm
-${getDiffText(latest.thickness, prev ? prev.thickness : null, 'mm')}
+🧊 厚さ: ${latest.thickness.toFixed(2)} mm${getDiffText(latest.thickness, prev ? prev.thickness : null, 'mm')}
 📷 写真: ${photoStatus}`;
 
         if (navigator.clipboard) {

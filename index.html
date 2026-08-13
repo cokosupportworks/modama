@@ -47,16 +47,30 @@
     .font-bold { font-weight: 700; } .text-sub { color: var(--text-sub); } .text-muted { color: var(--text-muted); }
     .trend-up { color: var(--success-green); } .trend-down { color: var(--danger-red); }
 
+    /* --- Header --- */
     .header { background-color: var(--accent-color); color: #FFF; padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
-    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .app-title { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
     .btn-header-action { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer; min-height: 44px; }
+    
+    .header-main-area { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px; }
     .modama-name { font-size: 1.25rem; font-weight: bold; }
-    .time-status { background-color: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: var(--border-radius-md); font-size: 1.1rem; font-weight: bold; display: inline-block; }
+    .time-status { background-color: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: var(--border-radius-md); font-size: 1.1rem; font-weight: bold; display: inline-block; margin-top: 4px; }
+    
+    .btn-measure-header {
+      background-color: var(--surface-color); color: var(--primary-blue);
+      padding: 12px 16px; border-radius: var(--border-radius-lg);
+      font-weight: bold; font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+    }
+    .btn-measure-header:active { transform: scale(0.95); }
 
-    .view-section { display: none; flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 120px; }
+    /* --- Views --- */
+    .view-section { display: none; flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px; }
     .view-section.active-view { display: block; }
 
+    /* --- Bottom Navigation --- */
     .bottom-nav {
       position: absolute; bottom: 0; left: 0; width: 100%; height: calc(60px + env(safe-area-inset-bottom));
       background-color: var(--surface-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: 15;
@@ -65,6 +79,7 @@
     .nav-item.active { color: var(--accent-color); }
     .nav-icon { font-size: 1.4rem; margin-bottom: 2px; } .nav-label { font-size: 0.7rem; font-weight: bold; }
 
+    /* --- Dashboard Cards --- */
     .dashboard-pagination {
       display: flex; justify-content: space-between; align-items: center; background: var(--surface-color);
       padding: 12px 16px; border-radius: var(--border-radius-lg); margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
@@ -81,49 +96,16 @@
     .diff-stats { background-color: var(--bg-color); padding: 8px 12px; border-radius: var(--border-radius-md); display: flex; flex-direction: column; gap: 4px; }
     .diff-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
     
-    #dash-photo-container { width: 100%; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; min-height: 200px; }
-    #dash-photo { max-width: 100%; object-fit: contain; }
-
-    .action-area { position: absolute; bottom: calc(60px + env(safe-area-inset-bottom)); left: 0; width: 100%; padding: 16px; pointer-events: none; z-index: 20; }
-    .btn-primary-trigger { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 64px; background-color: var(--primary-blue); color: #FFF; font-size: 1.25rem; font-weight: bold; border-radius: var(--border-radius-lg); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); cursor: pointer; pointer-events: auto; }
-    .btn-primary-trigger:active { transform: scale(0.97); }
-    .hide-action-btn .action-area { display: none; }
-
+    /* --- Settings & Chart --- */
     .view-title { margin-bottom: 16px; font-size: 1.2rem; }
     .chart-filters { display: flex; gap: 8px; margin-bottom: 16px; }
-    .filter-btn { flex: 1; padding: 10px 0; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); font-weight: bold; color: var(--text-sub); min-height: 44px; }
+    .filter-btn { flex: 1; padding: 10px 0; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); font-weight: bold; color: var(--text-sub); min-height: 44px; cursor: pointer; }
     .filter-btn.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
 
     .settings-btn { display: block; width: 100%; text-align: left; padding: 16px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); margin-bottom: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; min-height: 56px; }
     .settings-btn.danger { color: var(--danger-red); }
 
-    .camera-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 200; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s ease-in-out; }
-    .camera-modal.show { transform: translateY(0); }
-    
-    .camera-view-container { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #111;}
-    #camera-preview { width: 100%; height: 100%; object-fit: cover; transform-origin: center center; }
-    #day0-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0.5; display: none; }
-    
-    .camera-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
-    .camera-grid div { border-right: 1px solid rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.3); }
-    
-    .leveler { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; pointer-events: none; }
-    .leveler-crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .leveler-crosshair::before { content: ''; position: absolute; width: 100%; height: 1px; background: rgba(255,255,255,0.8); }
-    .leveler-crosshair::after { content: ''; position: absolute; width: 1px; height: 100%; background: rgba(255,255,255,0.8); }
-    .leveler-bubble { position: absolute; width: 16px; height: 16px; background: rgba(255,255,255,0.8); border-radius: 50%; transition: transform 0.1s ease-out; }
-    .leveler-bubble.level { background: #34C759; box-shadow: 0 0 10px #34C759; }
-
-    .camera-ui-bottom { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; padding-bottom: max(env(safe-area-inset-bottom), 20px); background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); display: flex; flex-direction: column; gap: 16px; }
-    .slider-row { display: flex; align-items: center; gap: 12px; color: white; font-size: 0.85rem; font-weight: bold; }
-    .slider-row input[type=range] { flex: 1; }
-    
-    .camera-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 8px;}
-    .btn-camera-close { background: rgba(255,255,255,0.2); color: white; border: none; padding: 12px 20px; border-radius: 20px; font-size: 1rem; font-weight: bold; cursor: pointer; min-height: 44px; }
-    .shutter-btn { width: 72px; height: 72px; border-radius: 50%; background: white; border: 4px solid #ccc; cursor: pointer; }
-    .shutter-btn:active { background: #eee; transform: scale(0.95); }
-    .camera-thumbnail { width: 44px; height: 44px; border-radius: 8px; border: 2px solid white; object-fit: cover; background: #333; }
-
+    /* --- Modals & Toasts --- */
     .toast-container { position: absolute; top: max(env(safe-area-inset-top), 20px); left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; width: 90%; pointer-events: none; }
     .toast { background-color: rgba(40, 40, 40, 0.95); color: white; padding: 14px 20px; border-radius: var(--border-radius-lg); font-size: 0.95rem; font-weight: bold; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: slideDown 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -137,22 +119,25 @@
     .btn-gray { background: var(--border-color); color: var(--text-main); }
     .btn-red { background: var(--danger-red); color: white; }
 
+    /* --- Measure Input Modal --- */
     #modal-toggle { display: none; }
     .measure-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 100; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
     #modal-toggle:checked ~ .measure-modal { transform: translateY(0); }
     .modal-header { background-color: var(--surface-color); padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
     .btn-text { min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; color: var(--primary-blue); font-size: 1.1rem; font-weight: bold; background: none; border: none; cursor: pointer; }
     .measure-tabs { display: flex; background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); }
-    .tab-item { flex: 1; text-align: center; padding: 12px 0; font-weight: bold; color: var(--text-muted); border-bottom: 3px solid transparent; display: flex; align-items: center; justify-content: center; min-height: 48px; }
+    .tab-item { flex: 1; text-align: center; padding: 12px 0; font-weight: bold; color: var(--text-muted); border-bottom: 3px solid transparent; display: flex; align-items: center; justify-content: center; min-height: 48px; cursor: pointer; }
     .tab-item.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
+    
     .input-sheet { flex: 1; overflow-y: auto; padding: 16px; }
-    .input-row { background-color: var(--surface-color); border: 2px solid var(--border-color); border-radius: var(--border-radius-md); padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; min-height: 56px; }
+    .input-row { background-color: var(--surface-color); border: 2px solid var(--border-color); border-radius: var(--border-radius-md); padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; min-height: 56px; cursor: pointer; }
     .input-row.active { border-color: var(--primary-blue); box-shadow: 0 0 0 2px rgba(0,122,255,0.2); }
     .input-row.outlier { background-color: var(--warning-bg); border-color: var(--warning-border); }
     .input-label-area { display: flex; flex-direction: column; } .input-label { font-size: 1rem; font-weight: bold; color: var(--text-sub); } .outlier-badge { color: var(--warning-text); font-size: 0.75rem; font-weight: bold; margin-top: 2px; }
     .input-value-area { display: flex; align-items: baseline; gap: 4px; } .input-value { font-size: 1.8rem; font-weight: bold; }
     .cursor-blink::after { content: '|'; color: var(--primary-blue); animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { opacity: 0; } }
+    
     .custom-numpad { background-color: #D1D1D6; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .numpad-btn { background-color: #FFFFFF; border: none; border-radius: 6px; box-shadow: 0 1px 1px rgba(0,0,0,0.3); font-size: 1.7rem; font-family: var(--font-base); min-height: 56px; cursor: pointer; }
     .numpad-btn:active { background-color: #B5B9BE; }
@@ -165,7 +150,7 @@
     
     <div id="toast-container" class="toast-container"></div>
     
-    <!-- Confirmation Dialog -->
+    <!-- 確認ダイアログ (全データ削除用) -->
     <div class="confirm-modal-overlay" id="confirm-dialog">
       <div class="confirm-modal">
         <div class="confirm-title" id="confirm-title">確認</div>
@@ -183,16 +168,23 @@
         <span class="app-title">🟤Modama Tracker</span>
         <button class="btn-header-action" id="btn-settings">⚙️ 設定</button>
       </div>
-
-      <div style="margin-top: 12px;">
-        <div class="text-sm" style="opacity: 0.9;">浸水開始から</div>
-        <div class="time-status mono-num" id="header-time">計算中...</div>
+      <!-- 新レイアウト: スクロールせずに全体を見渡せるように上部にボタン配置 -->
+      <div class="header-main-area">
+        <div>
+         
+          <div style="margin-top: 6px;">
+            <div class="text-xs" style="opacity: 0.9;">浸水開始から</div>
+            <div class="time-status mono-num" id="header-time">計算中...</div>
+          </div>
+        </div>
+        <label for="modal-toggle" class="btn-measure-header" id="btn-start-measure">＋ 測定開始</label>
       </div>
     </header>
 
+    <!-- ダッシュボード (記録) -->
     <main id="view-dashboard" class="view-section active-view">
       
-      <!-- Pagination Bar -->
+      <!-- ペジネーション -->
       <div class="dashboard-pagination">
         <button id="btn-prev-record" class="pagination-btn">◀ 過去</button>
         <span id="record-page-info" class="font-bold text-sm">-- / --</span>
@@ -201,7 +193,7 @@
 
       <section class="card">
         <div class="card-header">
-          <h2 class="card-title">秤 重量 (Weight)</h2>
+          <h2 class="card-title">⚖️ 秤 重量 (Weight)</h2>
           <span class="text-xs text-sub" id="dash-time-weight">未測定</span>
         </div>
         <div class="main-value-row">
@@ -234,15 +226,9 @@
         <div class="raw-values text-xs text-muted" id="raw-thickness">実測値: -</div>
         <div class="diff-stats" id="diff-stats-thickness"></div>
       </section>
-      
-      <section class="card" id="dash-photo-section" style="display: none;">
-        <div class="card-header"><h2 class="card-title">📷 観察写真</h2></div>
-        <div id="dash-photo-container">
-          <img id="dash-photo" src="" alt="観察写真">
-        </div>
-      </section>
     </main>
 
+    <!-- グラフ -->
     <main id="view-chart" class="view-section">
       <h2 class="view-title">📈 観察グラフ</h2>
       <div class="chart-filters">
@@ -256,6 +242,7 @@
       </div>
     </main>
 
+    <!-- 設定 -->
     <main id="view-settings" class="view-section">
       <h2 class="view-title">⚙️ 設定</h2>
       
@@ -270,49 +257,14 @@
       <button class="settings-btn danger" id="btn-delete-all">⚠️ 全データ削除</button>
     </main>
 
-    <!-- Navigation & Primary Action Buttons -->
-    <div class="action-area">
-      <label for="modal-toggle" class="btn-primary-trigger" id="btn-start-measure">＋ 今回の測定を開始</label>
-    </div>
-
+    <!-- 3タブ構成に変更されたボトムナビ -->
     <nav class="bottom-nav" id="bottom-nav">
       <div class="nav-item active" data-nav="dashboard"><div class="nav-icon">📋</div><div class="nav-label">記録</div></div>
       <div class="nav-item" data-nav="chart"><div class="nav-icon">📈</div><div class="nav-label">グラフ</div></div>
-      <div class="nav-item" data-nav="camera"><div class="nav-icon">📷</div><div class="nav-label">カメラ</div></div>
       <div class="nav-item" data-nav="export"><div class="nav-icon">💬</div><div class="nav-label">LINE出力</div></div>
     </nav>
-    
-    <div id="camera-modal" class="camera-modal">
-      <div class="camera-view-container">
-        <video id="camera-preview" autoplay playsinline></video>
-        <img id="day0-overlay" src="" alt="Day0 Overlay">
-        
-        <div class="camera-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-        
-        <div class="leveler">
-          <div class="leveler-crosshair"></div>
-          <div class="leveler-bubble" id="leveler-bubble" style="top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
-        </div>
-      </div>
-      
-      <div class="camera-ui-bottom">
-        <div class="slider-row">
-          <span>ズーム</span>
-          <input type="range" id="zoom-slider" min="1" max="5" step="0.1" value="1">
-        </div>
-        <div class="slider-row" id="day0-slider-container" style="display:none;">
-          <span>Day0透過</span>
-          <input type="range" id="opacity-slider" min="0" max="100" value="50">
-        </div>
-        <div class="camera-controls">
-          <button class="btn-camera-close" id="btn-camera-close">閉じる</button>
-          <button class="shutter-btn" id="btn-shutter" aria-label="シャッター"></button>
-          <img class="camera-thumbnail" id="camera-thumb" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="プレビューサムネイル">
-        </div>
-      </div>
-      <canvas id="capture-canvas" style="display:none;"></canvas>
-    </div>
 
+    <!-- 測定入力モーダル -->
     <input type="checkbox" id="modal-toggle">
     <div class="measure-modal">
       <div class="modal-header">
@@ -327,7 +279,7 @@
       </div>
       
       <div class="measure-tabs" id="measure-tabs">
-        <div class="tab-item active" data-tab="weight">秤 重量</div>
+        <div class="tab-item active" data-tab="weight">⚖️ 重量</div>
         <div class="tab-item" data-tab="length">📏 長さ</div>
         <div class="tab-item" data-tab="thickness">🧊 厚さ</div>
       </div>
@@ -353,24 +305,27 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       
+      // ==========================================
+      // IndexedDB & データ初期化
+      // ==========================================
       const START_DATE = new Date('2026-08-12T21:07:00+09:00');
       let records = [];
-      let currentDisplayIndex = -1; // -1 represents latest
+      let currentDisplayIndex = -1; // 表示中のレコードインデックス (-1は最新)
 
       const DB_NAME = 'ModamaTrackerDB';
-      const DB_VERSION = 2;
+      const DB_VERSION = 2; // バージョン更新で初期化対応
       const STORE_NAME = 'records';
       let db;
 
       function initDB() {
         return new Promise((resolve, reject) => {
           const request = indexedDB.open(DB_NAME, DB_VERSION);
-          request.onerror = (e) => { showToast('DB初期化エラー'); reject(e); };
+          request.onerror = (e) => { showToast('DBエラー'); reject(e); };
           request.onsuccess = (e) => { db = e.target.result; resolve(db); };
           request.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-              db.createObjectStore(STORE_NAME, { keyPath: 'time' });
+            const database = e.target.result;
+            if (!database.objectStoreNames.contains(STORE_NAME)) {
+              database.createObjectStore(STORE_NAME, { keyPath: 'time' });
             }
           };
         });
@@ -405,29 +360,30 @@
         });
       }
 
+      // DB初期化と初回ロード
       initDB().then(() => loadRecords()).then((data) => {
         records = data;
         currentDisplayIndex = records.length > 0 ? records.length - 1 : -1;
         updateDashboard();
       });
 
+      // ==========================================
+      // UI・画面遷移
+      // ==========================================
       const views = document.querySelectorAll('.view-section');
-      const appBody = document.getElementById('app-body');
       let chartInitialized = false;
 
       function switchView(viewId) {
         views.forEach(v => v.classList.remove('active-view'));
         document.getElementById(`view-${viewId}`).classList.add('active-view');
-        if(viewId === 'dashboard') appBody.classList.remove('hide-action-btn');
-        else appBody.classList.add('hide-action-btn');
         if(viewId === 'chart' && !chartInitialized) { initChart(); chartInitialized = true; }
       }
 
       document.querySelectorAll('.nav-item').forEach(nav => {
         nav.addEventListener('click', (e) => {
           const targetNav = e.currentTarget.dataset.nav;
-          if (targetNav === 'camera') return openCamera();
           if (targetNav === 'export') return exportToLine();
+          
           document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
           e.currentTarget.classList.add('active');
           switchView(targetNav);
@@ -459,6 +415,9 @@
         setTimeout(() => { toast.style.opacity='0'; setTimeout(()=>toast.remove(), 300); }, 3000);
       }
 
+      // ==========================================
+      // ダッシュボード更新ロジック
+      // ==========================================
       function getDiffHTML(current, previous, unit) {
         if (previous === null || previous === undefined) return '<span class="text-sub mono-num">比較データなし</span>';
         const diff = current - previous;
@@ -477,13 +436,13 @@
       function updateDashboard() {
         const idx = currentDisplayIndex;
         if (records.length === 0 || idx < 0 || idx >= records.length) {
+          // データがない場合のリセット
           ['weight', 'length', 'thickness'].forEach(k => {
              document.getElementById(`dash-${k}`).textContent = '--';
              document.getElementById(`dash-time-${k}`).textContent = '未測定';
              document.getElementById(`diff-stats-${k}`).innerHTML = '';
              document.getElementById(`raw-${k}`).textContent = '実測値: -';
           });
-          document.getElementById('dash-photo-section').style.display = 'none';
           document.getElementById('record-page-info').textContent = '-- / --';
           document.getElementById('btn-prev-record').disabled = true;
           document.getElementById('btn-next-record').disabled = true;
@@ -493,6 +452,7 @@
         const target = records[idx];
         const prev = idx > 0 ? records[idx - 1] : null;
 
+        // ペジネーション状態
         document.getElementById('record-page-info').textContent = `${idx + 1} / ${records.length}`;
         document.getElementById('btn-prev-record').disabled = (idx === 0);
         document.getElementById('btn-next-record').disabled = (idx === records.length - 1);
@@ -518,17 +478,9 @@
            }
            document.getElementById(`diff-stats-${k}`).innerHTML = statsHTML;
         });
-
-        const photoSec = document.getElementById('dash-photo-section');
-        const photoImg = document.getElementById('dash-photo');
-        if (target.photo) {
-          photoImg.src = target.photo;
-          photoSec.style.display = 'block';
-        } else {
-          photoSec.style.display = 'none';
-        }
       }
 
+      // ペジネーションボタン
       document.getElementById('btn-prev-record').addEventListener('click', () => {
         if(currentDisplayIndex > 0) { currentDisplayIndex--; updateDashboard(); }
       });
@@ -536,6 +488,9 @@
         if(currentDisplayIndex < records.length - 1) { currentDisplayIndex++; updateDashboard(); }
       });
 
+      // ==========================================
+      // Chart.js グラフ
+      // ==========================================
       let myChartInstance = null;
       function updateChart(rangeText = '1週') {
         if (!myChartInstance || records.length === 0) return;
@@ -574,6 +529,9 @@
         filterBtns.forEach(b => b.classList.remove('active')); e.target.classList.add('active'); updateChart(e.target.textContent);
       }));
 
+      // ==========================================
+      // 設定: データインポート・エクスポート
+      // ==========================================
       document.getElementById('btn-export-json').addEventListener('click', () => {
         if(records.length === 0) return showToast('データがありません');
         const dataStr = JSON.stringify(records, null, 2);
@@ -610,7 +568,7 @@
         records.forEach(r => { csv += `${r.time},${r.weight},${r.length},${r.thickness}\n`; });
         const blob = new Blob([csv], {type: 'text/csv'});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'modama_data.csv';
-        a.click(); showToast('CSVをエクスポートしました');
+        a.click(); showToast('CSVを出力しました');
       });
 
       const confirmModal = document.getElementById('confirm-dialog');
@@ -624,7 +582,7 @@
       document.getElementById('btn-confirm-ok').addEventListener('click', () => { confirmModal.style.display = 'none'; if(confirmAction) confirmAction(); });
 
       document.getElementById('btn-delete-all').addEventListener('click', () => {
-        showConfirm('全データ削除', 'すべての記録と写真が消去されます。本当によろしいですか？', async () => {
+        showConfirm('全データ削除', 'すべての記録が消去されます。よろしいですか？', async () => {
           records = []; currentDisplayIndex = -1;
           await clearAllDB(); updateDashboard();
           if(myChartInstance) updateChart('1週');
@@ -632,91 +590,15 @@
         });
       });
 
-      const cameraModal = document.getElementById('camera-modal');
-      const videoEl = document.getElementById('camera-preview');
-      const overlayEl = document.getElementById('day0-overlay');
-      const zoomSlider = document.getElementById('zoom-slider');
-      const opacitySlider = document.getElementById('opacity-slider');
-      let currentStream = null;
-      let pendingPhotoBase64 = null;
-
-      async function openCamera() {
-        cameraModal.classList.add('show');
-        
-        if(records.length > 0 && records[0].photo) {
-          overlayEl.src = records[0].photo; overlayEl.style.display = 'block';
-          document.getElementById('day0-slider-container').style.display = 'flex';
-        } else {
-          overlayEl.style.display = 'none'; document.getElementById('day0-slider-container').style.display = 'none';
-        }
-
-        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-          try {
-            const perm = await DeviceOrientationEvent.requestPermission();
-            if(perm === 'granted') window.addEventListener('deviceorientation', handleOrientation);
-          } catch(e){}
-        } else {
-          window.addEventListener('deviceorientation', handleOrientation);
-        }
-
-        try {
-          currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-          videoEl.srcObject = currentStream;
-          
-          const track = currentStream.getVideoTracks()[0];
-          const caps = track.getCapabilities();
-          if (caps.zoom) {
-            zoomSlider.min = caps.zoom.min; zoomSlider.max = caps.zoom.max; zoomSlider.step = caps.zoom.step;
-            zoomSlider.value = track.getSettings().zoom || 1;
-            zoomSlider.oninput = () => track.applyConstraints({advanced: [{zoom: zoomSlider.value}]});
-          } else {
-            zoomSlider.oninput = () => { videoEl.style.transform = `scale(${zoomSlider.value})`; };
-          }
-        } catch (err) { showToast('カメラを利用できません'); }
-      }
-
-      document.getElementById('btn-camera-close').addEventListener('click', () => {
-        cameraModal.classList.remove('show');
-        if(currentStream) currentStream.getTracks().forEach(t => t.stop());
-        window.removeEventListener('deviceorientation', handleOrientation);
-        videoEl.style.transform = 'scale(1)'; zoomSlider.value = 1;
-      });
-
-      opacitySlider.addEventListener('input', (e) => { overlayEl.style.opacity = e.target.value / 100; });
-
-      const bubble = document.getElementById('leveler-bubble');
-      function handleOrientation(e) {
-        let b = e.beta || 0; let g = e.gamma || 0;
-        let top = Math.max(-30, Math.min(30, b)) + 30;
-        let left = Math.max(-30, Math.min(30, g)) + 30;
-        
-        bubble.style.top = `calc(50% - 30px + ${top}px)`;
-        bubble.style.left = `calc(50% - 30px + ${left}px)`;
-        
-        if (Math.abs(b) < 2 && Math.abs(g) < 2) bubble.classList.add('level');
-        else bubble.classList.remove('level');
-      }
-
-      document.getElementById('btn-shutter').addEventListener('click', () => {
-        const canvas = document.getElementById('capture-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = videoEl.videoWidth || 640; canvas.height = videoEl.videoHeight || 480;
-        
-        const z = parseFloat(zoomSlider.value) || 1;
-        const sWidth = canvas.width / z; const sHeight = canvas.height / z;
-        const sx = (canvas.width - sWidth) / 2; const sy = (canvas.height - sHeight) / 2;
-        
-        ctx.drawImage(videoEl, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-        
-        pendingPhotoBase64 = canvas.toDataURL('image/jpeg', 0.6);
-        document.getElementById('camera-thumb').src = pendingPhotoBase64;
-        showToast('📷 写真を一時保存しました。(保存ボタンで確定します)');
-      });
-
+      // ==========================================
+      // LINE出力
+      // ==========================================
       function exportToLine() {
         if (records.length === 0) return showToast('出力するデータがありません');
         const target = records[currentDisplayIndex > -1 ? currentDisplayIndex : records.length - 1];
-        const prev = records.length > 1 ? records[records.length - 2] : null;
+        // 過去分をLINE出力する場合、その1つ前と比較する
+        const tIndex = records.indexOf(target);
+        const prev = tIndex > 0 ? records[tIndex - 1] : null;
 
         const dateStr = new Date(target.time).toLocaleString('ja-JP', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
         const timeElapsed = document.getElementById('header-time').textContent;
@@ -740,14 +622,16 @@ ${getDiffText(target.weight, prev ? prev.weight : null, 'g')}
 ${getDiffText(target.length, prev ? prev.length : null, 'mm')}
 
 🧊 厚さ: ${target.thickness.toFixed(2)} mm
-${getDiffText(target.thickness, prev ? prev.thickness : null, 'mm')}
-📷 写真: ${target.photo ? 'あり' : 'なし'}`;
+${getDiffText(target.thickness, prev ? prev.thickness : null, 'mm')}`;
 
         if (navigator.clipboard) {
           navigator.clipboard.writeText(text).then(()=>showToast('✅ LINE用レポートをコピー')).catch(()=>showToast('コピー失敗'));
         } else { showToast('未対応ブラウザです'); }
       }
 
+      // ==========================================
+      // 測定入力モーダル・ロジック
+      // ==========================================
       const limits = { weight: 5, length: 4, thickness: 4 };
       let state = { activeTab: 'weight', activeRowIndex: 0, data: { weight: ['','','','',''], length: ['','','',''], thickness: ['','','',''] } };
       const tabs = document.querySelectorAll('.tab-item');
@@ -807,9 +691,7 @@ ${getDiffText(target.thickness, prev ? prev.thickness : null, 'mm')}
 
       document.getElementById('btn-cancel').addEventListener('click', () => {
         state.data = { weight: ['','','','',''], length: ['','','',''], thickness: ['','','',''] };
-        state.activeRowIndex = 0; pendingPhotoBase64 = null;
-        document.getElementById('camera-thumb').src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-        renderInputSheet();
+        state.activeRowIndex = 0; renderInputSheet();
       });
 
       document.getElementById('btn-save').addEventListener('click', async () => {
@@ -820,7 +702,7 @@ ${getDiffText(target.thickness, prev ? prev.thickness : null, 'mm')}
         const lAvg = calculateAverage(state.data.length);
         const tAvg = calculateAverage(state.data.thickness);
         
-        if(!wAvg && !lAvg && !tAvg && !pendingPhotoBase64) return showToast('入力データか写真がありません');
+        if(!wAvg && !lAvg && !tAvg) return showToast('入力データがありません');
         
         const last = records.length > 0 ? records[records.length-1] : {weight:0, length:0, thickness:0};
         const newRecord = {
@@ -828,12 +710,7 @@ ${getDiffText(target.thickness, prev ? prev.thickness : null, 'mm')}
             weight: wAvg ? parseFloat(wAvg) : last.weight,
             length: lAvg ? parseFloat(lAvg) : last.length,
             thickness: tAvg ? parseFloat(tAvg) : last.thickness,
-            raw: {
-               weight: [...state.data.weight],
-               length: [...state.data.length],
-               thickness: [...state.data.thickness]
-            },
-            photo: pendingPhotoBase64 || null
+            raw: { weight: [...state.data.weight], length: [...state.data.length], thickness: [...state.data.thickness] }
         };
 
         records.push(newRecord);

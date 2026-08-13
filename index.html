@@ -6,430 +6,209 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Modama Tracker</title>
-  
+
  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="icon" href="apple-touch-icon.png">
-
-  <!-- グラフ描画用ライブラリ -->
+  
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* =========================================
-       CSS Variables
-       ========================================= */
     :root {
       --bg-color: #F4F4F5;
       --surface-color: #FFFFFF;
       --text-main: #1C1C1E;
       --text-sub: #636366;
       --text-muted: #8E8E93;
-      
       --accent-color: #6D4C41;
       --primary-blue: #007AFF;
       --success-green: #34C759;
       --danger-red: #FF3B30;
-      
       --warning-bg: #FFF9C4;
       --warning-border: #FBC02D;
       --warning-text: #F57F17;
-      
       --border-color: #E5E5EA;
-      
       --font-base: 'BIZ UDPGothic', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'SF Mono', 'Roboto Mono', Menlo, Consolas, monospace;
-      
       --border-radius-lg: 12px;
       --border-radius-md: 8px;
     }
 
-    /* =========================================
-       Reset & Base
-       ========================================= */
-    * {
-      box-sizing: border-box;
-      margin: 0; padding: 0;
-      touch-action: manipulation;
-    }
-
-    body {
-      font-family: var(--font-base);
-      background-color: #000;
-      color: var(--text-main);
-      line-height: 1.5;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+    body { font-family: var(--font-base); background-color: #000; color: var(--text-main); line-height: 1.5; user-select: none; -webkit-user-select: none; }
+    
     .app-container {
-      background-color: var(--bg-color);
-      max-width: 480px;
-      margin: 0 auto;
-      height: 100dvh;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      background-color: var(--bg-color); max-width: 480px; margin: 0 auto;
+      height: 100dvh; position: relative; overflow: hidden; display: flex; flex-direction: column;
     }
 
-    .mono-num {
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
-    }
-    
-    .text-sm { font-size: 0.85rem; }
-    .text-xs { font-size: 0.75rem; }
-    .font-bold { font-weight: 700; }
-    .text-sub { color: var(--text-sub); }
-    .trend-up { color: var(--success-green); }
-    .trend-down { color: var(--danger-red); }
+    .mono-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    .text-sm { font-size: 0.85rem; } .text-xs { font-size: 0.75rem; }
+    .font-bold { font-weight: 700; } .text-sub { color: var(--text-sub); } .text-muted { color: var(--text-muted); }
+    .trend-up { color: var(--success-green); } .trend-down { color: var(--danger-red); }
 
-    /* =========================================
-       Header
-       ========================================= */
-    .header {
-      background-color: var(--accent-color);
-      color: #FFF;
-      padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      z-index: 10;
-    }
-    
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    
-    .app-title {
-      font-size: 0.8rem;
-      opacity: 0.8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+    .header { background-color: var(--accent-color); color: #FFF; padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .app-title { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+    .btn-header-action { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer; min-height: 44px; }
+    .modama-name { font-size: 1.25rem; font-weight: bold; }
+    .time-status { background-color: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: var(--border-radius-md); font-size: 1.1rem; font-weight: bold; display: inline-block; }
 
-    /* 設定ボタン */
-    .btn-header-action {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 16px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    
-    .modama-name {
-      font-size: 1.25rem;
-      font-weight: bold;
-    }
-    
-    .time-status {
-      background-color: rgba(0,0,0,0.2);
-      padding: 8px 12px;
-      border-radius: var(--border-radius-md);
-      font-size: 1.1rem;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    /* =========================================
-       View Sections (画面切り替え用)
-       ========================================= */
-    .view-section {
-      display: none;
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      padding-bottom: 100px; /* ナビ用余白 */
-    }
-    .view-section.active-view {
-      display: block;
-    }
-
-    /* =========================================
-       Cards (Dashboard)
-       ========================================= */
-    .card {
-      background: var(--surface-color);
-      border-radius: var(--border-radius-lg);
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border: 1px solid var(--border-color);
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      border-bottom: 1px dashed var(--border-color);
-      padding-bottom: 8px;
-    }
-    .card-title {
-      font-size: 1rem;
-      font-weight: bold;
-      color: var(--text-sub);
-    }
-    .main-value-row {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-    .main-value { font-size: 2.5rem; font-weight: bold; }
-    .unit { font-size: 1.2rem; color: var(--text-sub); }
-    .diff-stats {
-      background-color: var(--bg-color);
-      padding: 8px 12px;
-      border-radius: var(--border-radius-md);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .diff-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-    }
-
-    /* =========================================
-       Bottom Navigation & Action Area
-       ========================================= */
-    .action-area {
-      position: absolute;
-      bottom: calc(60px + env(safe-area-inset-bottom));
-      left: 0; width: 100%; padding: 16px;
-      pointer-events: none;
-      z-index: 20;
-    }
-    
-    .btn-primary-trigger {
-      display: flex; align-items: center; justify-content: center;
-      width: 100%; min-height: 64px;
-      background-color: var(--primary-blue); color: #FFF;
-      font-size: 1.25rem; font-weight: bold;
-      border-radius: var(--border-radius-lg);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-      cursor: pointer; pointer-events: auto;
-    }
-    .btn-primary-trigger:active { transform: scale(0.97); }
-    
-    /* ダッシュボード以外では測定ボタンを隠す */
-    .hide-action-btn .action-area { display: none; }
+    .view-section { display: none; flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 120px; }
+    .view-section.active-view { display: block; }
 
     .bottom-nav {
-      position: absolute; bottom: 0; left: 0; width: 100%;
-      height: calc(60px + env(safe-area-inset-bottom));
-      background-color: var(--surface-color);
-      border-top: 1px solid var(--border-color);
-      display: flex; justify-content: space-around;
-      padding-bottom: env(safe-area-inset-bottom);
-      z-index: 15;
+      position: absolute; bottom: 0; left: 0; width: 100%; height: calc(60px + env(safe-area-inset-bottom));
+      background-color: var(--surface-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: 15;
     }
-    .nav-item {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      color: var(--text-muted); cursor: pointer; min-height: 56px;
-    }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; min-height: 56px; }
     .nav-item.active { color: var(--accent-color); }
-    .nav-icon { font-size: 1.4rem; margin-bottom: 2px; }
-    .nav-label { font-size: 0.7rem; font-weight: bold; }
+    .nav-icon { font-size: 1.4rem; margin-bottom: 2px; } .nav-label { font-size: 0.7rem; font-weight: bold; }
 
-    /* =========================================
-       Settings / Chart Views
-       ========================================= */
-    .view-title { margin-bottom: 16px; font-size: 1.2rem; }
+    .dashboard-pagination {
+      display: flex; justify-content: space-between; align-items: center; background: var(--surface-color);
+      padding: 12px 16px; border-radius: var(--border-radius-lg); margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
+    }
+    .pagination-btn { background: var(--bg-color); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: var(--border-radius-md); font-weight: bold; color: var(--primary-blue); cursor: pointer; min-height: 44px; }
+    .pagination-btn:disabled { color: var(--text-muted); opacity: 0.5; cursor: not-allowed; }
+
+    .card { background: var(--surface-color); border-radius: var(--border-radius-lg); padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+    .card-title { font-size: 1rem; font-weight: bold; color: var(--text-sub); }
+    .main-value-row { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
+    .main-value { font-size: 2.5rem; font-weight: bold; } .unit { font-size: 1.2rem; color: var(--text-sub); }
+    .raw-values { margin-bottom: 8px; font-family: var(--font-mono); }
+    .diff-stats { background-color: var(--bg-color); padding: 8px 12px; border-radius: var(--border-radius-md); display: flex; flex-direction: column; gap: 4px; }
+    .diff-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
     
-    /* グラフ用トグルボタン */
-    .chart-filters {
-      display: flex; gap: 8px; margin-bottom: 16px;
-    }
-    .filter-btn {
-      flex: 1; padding: 10px 0;
-      background: var(--surface-color);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius-md);
-      font-weight: bold; color: var(--text-sub);
-    }
-    .filter-btn.active {
-      background: var(--accent-color); color: white; border-color: var(--accent-color);
-    }
+    #dash-photo-container { width: 100%; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; min-height: 200px; }
+    #dash-photo { max-width: 100%; object-fit: contain; }
 
-    /* 設定用ボタン */
-    .settings-btn {
-      display: block; width: 100%; text-align: left;
-      padding: 16px; background: var(--surface-color);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius-md);
-      margin-bottom: 12px; font-size: 1rem; font-weight: bold;
-    }
+    .action-area { position: absolute; bottom: calc(60px + env(safe-area-inset-bottom)); left: 0; width: 100%; padding: 16px; pointer-events: none; z-index: 20; }
+    .btn-primary-trigger { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 64px; background-color: var(--primary-blue); color: #FFF; font-size: 1.25rem; font-weight: bold; border-radius: var(--border-radius-lg); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); cursor: pointer; pointer-events: auto; }
+    .btn-primary-trigger:active { transform: scale(0.97); }
+    .hide-action-btn .action-area { display: none; }
+
+    .view-title { margin-bottom: 16px; font-size: 1.2rem; }
+    .chart-filters { display: flex; gap: 8px; margin-bottom: 16px; }
+    .filter-btn { flex: 1; padding: 10px 0; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); font-weight: bold; color: var(--text-sub); min-height: 44px; }
+    .filter-btn.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+
+    .settings-btn { display: block; width: 100%; text-align: left; padding: 16px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); margin-bottom: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; min-height: 56px; }
     .settings-btn.danger { color: var(--danger-red); }
 
-    /* =========================================
-       Camera Modal (全画面表示)
-       ========================================= */
-    .camera-modal {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: #000; z-index: 200;
-      display: flex; flex-direction: column;
-      transform: translateY(100%);
-      transition: transform 0.3s ease-in-out;
-    }
+    .camera-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 200; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s ease-in-out; }
     .camera-modal.show { transform: translateY(0); }
     
-    #camera-preview {
-      flex: 1; width: 100%; height: 100%; object-fit: cover;
-    }
+    .camera-view-container { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #111;}
+    #camera-preview { width: 100%; height: 100%; object-fit: cover; transform-origin: center center; }
+    #day0-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0.5; display: none; }
     
-    .camera-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.5) 80%);
-      pointer-events: none;
-    }
+    .camera-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
+    .camera-grid div { border-right: 1px solid rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.3); }
     
-    .camera-ui-bottom {
-      position: absolute; bottom: 0; left: 0; width: 100%;
-      padding: 20px; padding-bottom: max(env(safe-area-inset-bottom), 20px);
-      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-      display: flex; flex-direction: column; gap: 20px;
-    }
+    .leveler { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; pointer-events: none; }
+    .leveler-crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .leveler-crosshair::before { content: ''; position: absolute; width: 100%; height: 1px; background: rgba(255,255,255,0.8); }
+    .leveler-crosshair::after { content: ''; position: absolute; width: 1px; height: 100%; background: rgba(255,255,255,0.8); }
+    .leveler-bubble { position: absolute; width: 16px; height: 16px; background: rgba(255,255,255,0.8); border-radius: 50%; transition: transform 0.1s ease-out; }
+    .leveler-bubble.level { background: #34C759; box-shadow: 0 0 10px #34C759; }
+
+    .camera-ui-bottom { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; padding-bottom: max(env(safe-area-inset-bottom), 20px); background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); display: flex; flex-direction: column; gap: 16px; }
+    .slider-row { display: flex; align-items: center; gap: 12px; color: white; font-size: 0.85rem; font-weight: bold; }
+    .slider-row input[type=range] { flex: 1; }
     
-    .camera-controls {
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    
-    .btn-camera-close {
-      background: rgba(255,255,255,0.2); color: white;
-      border: none; padding: 12px 20px; border-radius: 20px;
-      font-size: 1rem; font-weight: bold; cursor: pointer;
-    }
-    
-    .shutter-btn {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: white; border: 4px solid #ccc; cursor: pointer;
-    }
+    .camera-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 8px;}
+    .btn-camera-close { background: rgba(255,255,255,0.2); color: white; border: none; padding: 12px 20px; border-radius: 20px; font-size: 1rem; font-weight: bold; cursor: pointer; min-height: 44px; }
+    .shutter-btn { width: 72px; height: 72px; border-radius: 50%; background: white; border: 4px solid #ccc; cursor: pointer; }
     .shutter-btn:active { background: #eee; transform: scale(0.95); }
+    .camera-thumbnail { width: 44px; height: 44px; border-radius: 8px; border: 2px solid white; object-fit: cover; background: #333; }
 
-    .opacity-slider-container {
-      display: flex; align-items: center; gap: 12px; color: white; font-size: 0.9rem;
-    }
-    input[type=range] { flex: 1; }
+    .toast-container { position: absolute; top: max(env(safe-area-inset-top), 20px); left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; width: 90%; pointer-events: none; }
+    .toast { background-color: rgba(40, 40, 40, 0.95); color: white; padding: 14px 20px; border-radius: var(--border-radius-lg); font-size: 0.95rem; font-weight: bold; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: slideDown 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* =========================================
-       Toast Notification (LINE出力等)
-       ========================================= */
-    .toast-container {
-      position: absolute; top: max(env(safe-area-inset-top), 20px);
-      left: 50%; transform: translateX(-50%);
-      z-index: 1000; display: flex; flex-direction: column; gap: 8px; width: 90%;
-      pointer-events: none;
-    }
-    .toast {
-      background-color: rgba(40, 40, 40, 0.95); color: white;
-      padding: 14px 20px; border-radius: var(--border-radius-lg);
-      font-size: 0.95rem; font-weight: bold; text-align: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-      animation: slideDown 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    }
-    @keyframes slideDown {
-      from { transform: translateY(-30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
+    .confirm-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; display: none; align-items: center; justify-content: center; }
+    .confirm-modal { background: var(--surface-color); width: 85%; max-width: 320px; border-radius: var(--border-radius-lg); padding: 24px; text-align: center; }
+    .confirm-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; }
+    .confirm-msg { color: var(--text-sub); font-size: 0.95rem; margin-bottom: 24px; }
+    .confirm-actions { display: flex; gap: 12px; }
+    .confirm-actions button { flex: 1; padding: 12px 0; border: none; border-radius: var(--border-radius-md); font-weight: bold; font-size: 1rem; cursor: pointer; min-height: 44px; }
+    .btn-gray { background: var(--border-color); color: var(--text-main); }
+    .btn-red { background: var(--danger-red); color: white; }
 
-    /* =========================================
-       Measurement Modal
-       ========================================= */
     #modal-toggle { display: none; }
-    .measure-modal {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: var(--bg-color); z-index: 100;
-      display: flex; flex-direction: column;
-      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
+    .measure-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 100; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
     #modal-toggle:checked ~ .measure-modal { transform: translateY(0); }
-    
-    .modal-header {
-      background-color: var(--surface-color);
-      padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px;
-      display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .btn-text {
-      min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;
-      color: var(--primary-blue); font-size: 1.1rem; font-weight: bold;
-      background: none; border: none; cursor: pointer;
-    }
+    .modal-header { background-color: var(--surface-color); padding: max(env(safe-area-inset-top), 16px) 16px 16px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .btn-text { min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; color: var(--primary-blue); font-size: 1.1rem; font-weight: bold; background: none; border: none; cursor: pointer; }
     .measure-tabs { display: flex; background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); }
-    .tab-item {
-      flex: 1; text-align: center; padding: 12px 0; font-weight: bold; color: var(--text-muted);
-      border-bottom: 3px solid transparent; min-height: 56px; display: flex; align-items: center; justify-content: center;
-    }
+    .tab-item { flex: 1; text-align: center; padding: 12px 0; font-weight: bold; color: var(--text-muted); border-bottom: 3px solid transparent; display: flex; align-items: center; justify-content: center; min-height: 48px; }
     .tab-item.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
-    
     .input-sheet { flex: 1; overflow-y: auto; padding: 16px; }
-    .input-row {
-      background-color: var(--surface-color); border: 2px solid var(--border-color);
-      border-radius: var(--border-radius-md); padding: 12px 16px; margin-bottom: 12px;
-      display: flex; align-items: center; justify-content: space-between; min-height: 56px;
-    }
+    .input-row { background-color: var(--surface-color); border: 2px solid var(--border-color); border-radius: var(--border-radius-md); padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; min-height: 56px; }
     .input-row.active { border-color: var(--primary-blue); box-shadow: 0 0 0 2px rgba(0,122,255,0.2); }
     .input-row.outlier { background-color: var(--warning-bg); border-color: var(--warning-border); }
-    .input-label-area { display: flex; flex-direction: column; }
-    .input-label { font-size: 1rem; font-weight: bold; color: var(--text-sub); }
-    .outlier-badge { color: var(--warning-text); font-size: 0.75rem; font-weight: bold; margin-top: 2px; }
-    .input-value-area { display: flex; align-items: baseline; gap: 4px; }
-    .input-value { font-size: 1.8rem; font-weight: bold; }
+    .input-label-area { display: flex; flex-direction: column; } .input-label { font-size: 1rem; font-weight: bold; color: var(--text-sub); } .outlier-badge { color: var(--warning-text); font-size: 0.75rem; font-weight: bold; margin-top: 2px; }
+    .input-value-area { display: flex; align-items: baseline; gap: 4px; } .input-value { font-size: 1.8rem; font-weight: bold; }
     .cursor-blink::after { content: '|'; color: var(--primary-blue); animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { opacity: 0; } }
-
-    .custom-numpad {
-      background-color: #D1D1D6; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) 8px;
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    }
-    .numpad-btn {
-      background-color: #FFFFFF; border: none; border-radius: 6px; box-shadow: 0 1px 1px rgba(0,0,0,0.3);
-      font-size: 1.7rem; font-family: var(--font-base); min-height: 56px; cursor: pointer;
-    }
+    .custom-numpad { background-color: #D1D1D6; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .numpad-btn { background-color: #FFFFFF; border: none; border-radius: 6px; box-shadow: 0 1px 1px rgba(0,0,0,0.3); font-size: 1.7rem; font-family: var(--font-base); min-height: 56px; cursor: pointer; }
     .numpad-btn:active { background-color: #B5B9BE; }
-    .numpad-btn.control-btn { background-color: #AEB3BE; font-size: 1.2rem; }
-    .numpad-btn.action-btn { background-color: var(--primary-blue); color: #FFF; font-size: 1.2rem; font-weight: bold; }
+    .numpad-btn.control-btn { background-color: #AEB3BE; font-size: 1.2rem; } .numpad-btn.action-btn { background-color: var(--primary-blue); color: #FFF; font-size: 1.2rem; font-weight: bold; }
   </style>
 </head>
 <body id="app-body">
 
   <div class="app-container">
     
-    <!-- トースト通知コンテナ -->
     <div id="toast-container" class="toast-container"></div>
+    
+    <!-- Confirmation Dialog -->
+    <div class="confirm-modal-overlay" id="confirm-dialog">
+      <div class="confirm-modal">
+        <div class="confirm-title" id="confirm-title">確認</div>
+        <div class="confirm-msg" id="confirm-msg">実行しますか？</div>
+        <div class="confirm-actions">
+          <button class="btn-gray" id="btn-confirm-cancel">キャンセル</button>
+          <button class="btn-red" id="btn-confirm-ok">削除する</button>
+        </div>
+      </div>
+    </div>
 
-    <!-- ヘッダー -->
+    <!-- App Header -->
     <header class="header">
       <div class="header-top">
         <span class="app-title">🟤Modama Tracker</span>
         <button class="btn-header-action" id="btn-settings">⚙️ 設定</button>
       </div>
+
       <div style="margin-top: 12px;">
         <div class="text-sm" style="opacity: 0.9;">浸水開始から</div>
         <div class="time-status mono-num" id="header-time">計算中...</div>
       </div>
     </header>
 
-    <!-- ================= VIEW: Dashboard (記録) ================= -->
     <main id="view-dashboard" class="view-section active-view">
+      
+      <!-- Pagination Bar -->
+      <div class="dashboard-pagination">
+        <button id="btn-prev-record" class="pagination-btn">◀ 過去</button>
+        <span id="record-page-info" class="font-bold text-sm">-- / --</span>
+        <button id="btn-next-record" class="pagination-btn">最新 ▶</button>
+      </div>
+
       <section class="card">
         <div class="card-header">
-          <h2 class="card-title">⚖️ 重量 (Weight)</h2>
+          <h2 class="card-title">秤 重量 (Weight)</h2>
           <span class="text-xs text-sub" id="dash-time-weight">未測定</span>
         </div>
         <div class="main-value-row">
-          <span class="main-value mono-num" id="dash-weight">--</span>
-          <span class="unit">g</span>
+          <span class="main-value mono-num" id="dash-weight">--</span><span class="unit">g</span>
         </div>
-        <div class="diff-stats" id="diff-stats-weight">
-          <!-- JSで動的生成 -->
-        </div>
+        <div class="raw-values text-xs text-muted" id="raw-weight">実測値: -</div>
+        <div class="diff-stats" id="diff-stats-weight"></div>
       </section>
 
       <section class="card">
@@ -438,12 +217,10 @@
           <span class="text-xs text-sub" id="dash-time-length">未測定</span>
         </div>
         <div class="main-value-row">
-          <span class="main-value mono-num" id="dash-length">--</span>
-          <span class="unit">mm</span>
+          <span class="main-value mono-num" id="dash-length">--</span><span class="unit">mm</span>
         </div>
-        <div class="diff-stats" id="diff-stats-length">
-          <!-- JSで動的生成 -->
-        </div>
+        <div class="raw-values text-xs text-muted" id="raw-length">実測値: -</div>
+        <div class="diff-stats" id="diff-stats-length"></div>
       </section>
 
       <section class="card">
@@ -452,94 +229,90 @@
           <span class="text-xs text-sub" id="dash-time-thickness">未測定</span>
         </div>
         <div class="main-value-row">
-          <span class="main-value mono-num" id="dash-thickness">--</span>
-          <span class="unit">mm</span>
+          <span class="main-value mono-num" id="dash-thickness">--</span><span class="unit">mm</span>
         </div>
-        <div class="diff-stats" id="diff-stats-thickness">
-          <!-- JSで動的生成 -->
+        <div class="raw-values text-xs text-muted" id="raw-thickness">実測値: -</div>
+        <div class="diff-stats" id="diff-stats-thickness"></div>
+      </section>
+      
+      <section class="card" id="dash-photo-section" style="display: none;">
+        <div class="card-header"><h2 class="card-title">📷 観察写真</h2></div>
+        <div id="dash-photo-container">
+          <img id="dash-photo" src="" alt="観察写真">
         </div>
       </section>
     </main>
 
-    <!-- ================= VIEW: Chart (グラフ) ================= -->
     <main id="view-chart" class="view-section">
       <h2 class="view-title">📈 観察グラフ</h2>
-      
       <div class="chart-filters">
         <button class="filter-btn">24h</button>
         <button class="filter-btn">3日</button>
         <button class="filter-btn active">1週</button>
         <button class="filter-btn">全期間</button>
       </div>
-
       <div class="card" style="padding: 8px;">
         <canvas id="myChart" width="100" height="80"></canvas>
       </div>
-      
-      <p class="text-sm text-muted" style="margin-top: 16px;">
-        ※入力されたデータが即座に反映されます。
-      </p>
     </main>
 
-    <!-- ================= VIEW: Settings (設定) ================= -->
     <main id="view-settings" class="view-section">
       <h2 class="view-title">⚙️ 設定</h2>
       
       <h3 class="text-sub text-sm" style="margin-bottom: 8px;">データ管理</h3>
-      <button class="settings-btn" onclick="showToast('バックアップを保存しました（モック）')">📥 JSONバックアップ</button>
-      <button class="settings-btn" onclick="showToast('復元画面を開きます（モック）')">📤 JSON復元</button>
-      <button class="settings-btn" onclick="showToast('CSVを出力しました（モック）')">📊 CSVエクスポート</button>
+      <button class="settings-btn" id="btn-export-json">📥 JSONバックアップ保存</button>
+      <button class="settings-btn" id="btn-import-json">📤 JSON復元 (ファイル読込)</button>
+      <input type="file" id="file-import-json" accept=".json" style="display:none;">
+      
+      <button class="settings-btn" id="btn-export-csv">📊 CSVエクスポート</button>
       
       <h3 class="text-sub text-sm" style="margin: 24px 0 8px 0;">危険な操作</h3>
-      <button class="settings-btn danger" onclick="showToast('削除機能は未実装です')">⚠️ 全データ削除</button>
+      <button class="settings-btn danger" id="btn-delete-all">⚠️ 全データ削除</button>
     </main>
 
-    <!-- ================= アクションボタン ================= -->
+    <!-- Navigation & Primary Action Buttons -->
     <div class="action-area">
-      <label for="modal-toggle" class="btn-primary-trigger" id="btn-start-measure">
-        ＋ 今回の測定を開始
-      </label>
+      <label for="modal-toggle" class="btn-primary-trigger" id="btn-start-measure">＋ 今回の測定を開始</label>
     </div>
 
-    <!-- ================= ボトムナビ ================= -->
     <nav class="bottom-nav" id="bottom-nav">
-      <div class="nav-item active" data-nav="dashboard">
-        <div class="nav-icon">📋</div>
-        <div class="nav-label">記録</div>
-      </div>
-      <div class="nav-item" data-nav="chart">
-        <div class="nav-icon">📈</div>
-        <div class="nav-label">グラフ</div>
-      </div>
-      <div class="nav-item" data-nav="camera">
-        <div class="nav-icon">📷</div>
-        <div class="nav-label">カメラ</div>
-      </div>
-      <div class="nav-item" data-nav="export">
-        <div class="nav-icon">💬</div>
-        <div class="nav-label">LINE出力</div>
-      </div>
+      <div class="nav-item active" data-nav="dashboard"><div class="nav-icon">📋</div><div class="nav-label">記録</div></div>
+      <div class="nav-item" data-nav="chart"><div class="nav-icon">📈</div><div class="nav-label">グラフ</div></div>
+      <div class="nav-item" data-nav="camera"><div class="nav-icon">📷</div><div class="nav-label">カメラ</div></div>
+      <div class="nav-item" data-nav="export"><div class="nav-icon">💬</div><div class="nav-label">LINE出力</div></div>
     </nav>
     
-    <!-- ================= カメラ用全画面モーダル ================= -->
     <div id="camera-modal" class="camera-modal">
-      <video id="camera-preview" autoplay playsinline></video>
-      <div class="camera-overlay"></div>
+      <div class="camera-view-container">
+        <video id="camera-preview" autoplay playsinline></video>
+        <img id="day0-overlay" src="" alt="Day0 Overlay">
+        
+        <div class="camera-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+        
+        <div class="leveler">
+          <div class="leveler-crosshair"></div>
+          <div class="leveler-bubble" id="leveler-bubble" style="top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+        </div>
+      </div>
       
       <div class="camera-ui-bottom">
-        <div class="opacity-slider-container">
+        <div class="slider-row">
+          <span>ズーム</span>
+          <input type="range" id="zoom-slider" min="1" max="5" step="0.1" value="1">
+        </div>
+        <div class="slider-row" id="day0-slider-container" style="display:none;">
           <span>Day0透過</span>
-          <input type="range" min="0" max="100" value="50">
+          <input type="range" id="opacity-slider" min="0" max="100" value="50">
         </div>
         <div class="camera-controls">
           <button class="btn-camera-close" id="btn-camera-close">閉じる</button>
-          <button class="shutter-btn" id="btn-shutter"></button>
-          <div style="width: 72px;"></div>
+          <button class="shutter-btn" id="btn-shutter" aria-label="シャッター"></button>
+          <img class="camera-thumbnail" id="camera-thumb" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="プレビューサムネイル">
         </div>
       </div>
+      <canvas id="capture-canvas" style="display:none;"></canvas>
     </div>
 
-    <!-- ================= 測定入力モーダル ================= -->
     <input type="checkbox" id="modal-toggle">
     <div class="measure-modal">
       <div class="modal-header">
@@ -554,7 +327,7 @@
       </div>
       
       <div class="measure-tabs" id="measure-tabs">
-        <div class="tab-item active" data-tab="weight">⚖️ 重量</div>
+        <div class="tab-item active" data-tab="weight">秤 重量</div>
         <div class="tab-item" data-tab="length">📏 長さ</div>
         <div class="tab-item" data-tab="thickness">🧊 厚さ</div>
       </div>
@@ -568,85 +341,108 @@
       </div>
       
       <div class="custom-numpad" id="custom-numpad">
-        <button class="numpad-btn mono-num" data-key="1">1</button>
-        <button class="numpad-btn mono-num" data-key="2">2</button>
-        <button class="numpad-btn mono-num" data-key="3">3</button>
-        <button class="numpad-btn mono-num" data-key="4">4</button>
-        <button class="numpad-btn mono-num" data-key="5">5</button>
-        <button class="numpad-btn mono-num" data-key="6">6</button>
-        <button class="numpad-btn mono-num" data-key="7">7</button>
-        <button class="numpad-btn mono-num" data-key="8">8</button>
-        <button class="numpad-btn mono-num" data-key="9">9</button>
-        <button class="numpad-btn mono-num" data-key=".">.</button>
-        <button class="numpad-btn mono-num" data-key="0">0</button>
-        <button class="numpad-btn control-btn" data-key="bs">⌫</button>
-        <div style="grid-column: 1 / span 2;"></div>
-        <button class="numpad-btn action-btn" data-key="next">次へ ➔</button>
+        <button class="numpad-btn mono-num" data-key="1">1</button><button class="numpad-btn mono-num" data-key="2">2</button><button class="numpad-btn mono-num" data-key="3">3</button>
+        <button class="numpad-btn mono-num" data-key="4">4</button><button class="numpad-btn mono-num" data-key="5">5</button><button class="numpad-btn mono-num" data-key="6">6</button>
+        <button class="numpad-btn mono-num" data-key="7">7</button><button class="numpad-btn mono-num" data-key="8">8</button><button class="numpad-btn mono-num" data-key="9">9</button>
+        <button class="numpad-btn mono-num" data-key=".">.</button><button class="numpad-btn mono-num" data-key="0">0</button><button class="numpad-btn control-btn" data-key="bs">⌫</button>
+        <div style="grid-column: 1 / span 2;"></div><button class="numpad-btn action-btn" data-key="next">次へ ➔</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= JavaScript ロジック ================= -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       
-      // ==========================================
-      // データステート (記録配列)
-      // ==========================================
-      const START_DATE_STR = '2026-08-12T21:07:00+09:00';
-      const START_DATE = new Date(START_DATE_STR);
-      
-      // アプリが保持する実際のデータ（初期データは空とし、初回入力から蓄積する）
+      const START_DATE = new Date('2026-08-12T21:07:00+09:00');
       let records = [];
+      let currentDisplayIndex = -1; // -1 represents latest
 
-      // ==========================================
-      // UI・画面遷移制御 (SPA Logic)
-      // ==========================================
-      const navItems = document.querySelectorAll('.nav-item');
+      const DB_NAME = 'ModamaTrackerDB';
+      const DB_VERSION = 2;
+      const STORE_NAME = 'records';
+      let db;
+
+      function initDB() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
+          request.onerror = (e) => { showToast('DB初期化エラー'); reject(e); };
+          request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: 'time' });
+            }
+          };
+        });
+      }
+
+      function loadRecords() {
+        return new Promise((resolve) => {
+          if (!db) return resolve([]);
+          const tx = db.transaction([STORE_NAME], 'readonly');
+          const request = tx.objectStore(STORE_NAME).getAll();
+          request.onsuccess = (e) => {
+            let data = e.target.result || [];
+            data.sort((a, b) => new Date(a.time) - new Date(b.time));
+            resolve(data);
+          };
+        });
+      }
+
+      function saveRecordToDB(record) {
+        return new Promise((resolve) => {
+          if (!db) return resolve();
+          const tx = db.transaction([STORE_NAME], 'readwrite');
+          tx.objectStore(STORE_NAME).put(record).onsuccess = resolve;
+        });
+      }
+      
+      function clearAllDB() {
+        return new Promise((resolve) => {
+          if (!db) return resolve();
+          const tx = db.transaction([STORE_NAME], 'readwrite');
+          tx.objectStore(STORE_NAME).clear().onsuccess = resolve;
+        });
+      }
+
+      initDB().then(() => loadRecords()).then((data) => {
+        records = data;
+        currentDisplayIndex = records.length > 0 ? records.length - 1 : -1;
+        updateDashboard();
+      });
+
       const views = document.querySelectorAll('.view-section');
       const appBody = document.getElementById('app-body');
-      
       let chartInitialized = false;
 
-      // ビュー切り替え
       function switchView(viewId) {
         views.forEach(v => v.classList.remove('active-view'));
         document.getElementById(`view-${viewId}`).classList.add('active-view');
-        
         if(viewId === 'dashboard') appBody.classList.remove('hide-action-btn');
         else appBody.classList.add('hide-action-btn');
-
-        if(viewId === 'chart' && !chartInitialized) {
-          initChart();
-          chartInitialized = true;
-        }
+        if(viewId === 'chart' && !chartInitialized) { initChart(); chartInitialized = true; }
       }
 
-      navItems.forEach(nav => {
+      document.querySelectorAll('.nav-item').forEach(nav => {
         nav.addEventListener('click', (e) => {
           const targetNav = e.currentTarget.dataset.nav;
           if (targetNav === 'camera') return openCamera();
           if (targetNav === 'export') return exportToLine();
-
-          navItems.forEach(n => n.classList.remove('active'));
+          document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
           e.currentTarget.classList.add('active');
           switchView(targetNav);
         });
       });
 
       document.getElementById('btn-settings').addEventListener('click', () => {
-        navItems.forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         switchView('settings');
       });
 
-      // ==========================================
-      // 時間計算と表示更新
-      // ==========================================
       function updateElapsedTime() {
         const now = new Date();
         const diffMs = now - START_DATE;
         if (diffMs < 0) { document.getElementById('header-time').textContent = '開始前'; return; }
-        
         const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         const h = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -654,12 +450,17 @@
       }
       updateElapsedTime();
       setInterval(updateElapsedTime, 60000);
+      
+      function showToast(msg) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast'; toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity='0'; setTimeout(()=>toast.remove(), 300); }, 3000);
+      }
 
-      // ==========================================
-      // ダッシュボード更新ロジック
-      // ==========================================
       function getDiffHTML(current, previous, unit) {
-        if (!previous && previous !== 0) return '';
+        if (previous === null || previous === undefined) return '<span class="text-sub mono-num">比較データなし</span>';
         const diff = current - previous;
         const percent = previous !== 0 ? (diff / previous) * 100 : 0;
         const sign = diff > 0 ? '▲ +' : (diff < 0 ? '▼ ' : '±');
@@ -667,95 +468,89 @@
         return `<span class="font-bold ${colorClass} mono-num">${sign}${Math.abs(diff).toFixed(2)} ${unit} (${sign}${Math.abs(percent).toFixed(1)}%)</span>`;
       }
 
-      function updateDashboard() {
-        if (records.length === 0) {
-            ['weight', 'length', 'thickness'].forEach(tab => {
-                document.getElementById(`dash-${tab}`).textContent = '--';
-                document.getElementById(`dash-time-${tab}`).textContent = '未測定';
-                document.getElementById(`diff-stats-${tab}`).innerHTML = '';
-            });
-            return;
-        }
-        
-        const latest = records[records.length - 1];
-        // 記録が2件以上ある場合のみ、1つ前のデータを比較対象(prev)とする
-        const prev = records.length > 1 ? records[records.length - 2] : null;
-
-        // 時刻のフォーマット (MM/DD HH:mm 測定)
-        const d = new Date(latest.time);
-        const timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} 測定`;
-
-        // --- 重量 ---
-        document.getElementById('dash-weight').textContent = latest.weight.toFixed(2);
-        document.getElementById('dash-time-weight').textContent = timeStr;
-        
-        let weightStatsHTML = '';
-        if (prev) {
-          weightStatsHTML += `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.weight, prev.weight, 'g')}</div>`;
-          // 吸水速度の計算
-          const hours = (new Date(latest.time) - new Date(prev.time)) / (1000 * 60 * 60);
-          if (hours > 0) {
-            const speed = (latest.weight - prev.weight) / hours;
-            const sSign = speed > 0 ? '+' : '';
-            const sColor = speed > 0 ? 'trend-up' : (speed < 0 ? 'trend-down' : 'text-sub');
-            weightStatsHTML += `<div class="diff-row"><span class="text-sub">重量変化速度</span><span class="font-bold ${sColor} mono-num">${sSign}${speed.toFixed(2)} g/h</span></div>`;
-          }
-        }
-        document.getElementById('diff-stats-weight').innerHTML = weightStatsHTML; // 初回は空になる
-
-        // --- 長さ ---
-        document.getElementById('dash-length').textContent = latest.length.toFixed(2);
-        document.getElementById('dash-time-length').textContent = timeStr;
-        document.getElementById('diff-stats-length').innerHTML = prev ? `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.length, prev.length, 'mm')}</div>` : '';
-
-        // --- 厚さ ---
-        document.getElementById('dash-thickness').textContent = latest.thickness.toFixed(2);
-        document.getElementById('dash-time-thickness').textContent = timeStr;
-        document.getElementById('diff-stats-thickness').innerHTML = prev ? `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(latest.thickness, prev.thickness, 'mm')}</div>` : '';
+      function formatRawValues(rawArr) {
+        if(!rawArr || !Array.isArray(rawArr)) return 'なし';
+        const filtered = rawArr.filter(v => v !== '');
+        return filtered.length > 0 ? filtered.join(', ') : 'なし';
       }
 
-      // ==========================================
-      // Chart.js グラフ描画（本物データ連動）
-      // ==========================================
-      let myChartInstance = null;
-
-      function updateChart(rangeText = '1週') {
-        if (!myChartInstance) return;
-        
-        // データが0件の場合はグラフをクリアして終了
-        if (records.length === 0) {
-            myChartInstance.data.labels = [];
-            myChartInstance.data.datasets[0].data = [];
-            myChartInstance.data.datasets[1].data = [];
-            myChartInstance.update();
-            return;
+      function updateDashboard() {
+        const idx = currentDisplayIndex;
+        if (records.length === 0 || idx < 0 || idx >= records.length) {
+          ['weight', 'length', 'thickness'].forEach(k => {
+             document.getElementById(`dash-${k}`).textContent = '--';
+             document.getElementById(`dash-time-${k}`).textContent = '未測定';
+             document.getElementById(`diff-stats-${k}`).innerHTML = '';
+             document.getElementById(`raw-${k}`).textContent = '実測値: -';
+          });
+          document.getElementById('dash-photo-section').style.display = 'none';
+          document.getElementById('record-page-info').textContent = '-- / --';
+          document.getElementById('btn-prev-record').disabled = true;
+          document.getElementById('btn-next-record').disabled = true;
+          return;
         }
 
-        const now = new Date();
-        let limitMs = 0;
-        
-        if (rangeText === '24h') limitMs = 24 * 60 * 60 * 1000;
-        else if (rangeText === '3日') limitMs = 3 * 24 * 60 * 60 * 1000;
-        else if (rangeText === '1週') limitMs = 7 * 24 * 60 * 60 * 1000;
-        else limitMs = Infinity; // 全期間
+        const target = records[idx];
+        const prev = idx > 0 ? records[idx - 1] : null;
 
-        // フィルタリング
-        const filtered = records.filter(r => (now - new Date(r.time)) <= limitMs);
-        
-        // もしフィルタ後データが無ければ、最低でも最新1件を表示
-        const targetData = filtered.length > 0 ? filtered : [records[records.length - 1]];
+        document.getElementById('record-page-info').textContent = `${idx + 1} / ${records.length}`;
+        document.getElementById('btn-prev-record').disabled = (idx === 0);
+        document.getElementById('btn-next-record').disabled = (idx === records.length - 1);
 
-        const labels = targetData.map(r => {
-          const d = new Date(r.time);
-          if (rangeText === '24h') return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-          return `${d.getMonth()+1}/${d.getDate()}`;
+        const d = new Date(target.time);
+        const timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} 測定`;
+
+        ['weight', 'length', 'thickness'].forEach(k => {
+           document.getElementById(`dash-${k}`).textContent = target[k].toFixed(2);
+           document.getElementById(`dash-time-${k}`).textContent = timeStr;
+           document.getElementById(`raw-${k}`).textContent = `実測値: (${formatRawValues(target.raw?.[k])})`;
+           
+           let statsHTML = `<div class="diff-row"><span class="text-sub">前回比</span>${getDiffHTML(target[k], prev ? prev[k] : null, k==='weight'?'g':'mm')}</div>`;
+           
+           if (k === 'weight' && prev) {
+              const hours = (new Date(target.time) - new Date(prev.time)) / (1000 * 60 * 60);
+              if (hours > 0) {
+                const speed = (target.weight - prev.weight) / hours;
+                const sSign = speed > 0 ? '+' : '';
+                const sColor = speed > 0 ? 'trend-up' : (speed < 0 ? 'trend-down' : 'text-sub');
+                statsHTML += `<div class="diff-row"><span class="text-sub">重量変化速度</span><span class="font-bold ${sColor} mono-num">${sSign}${speed.toFixed(2)} g/h</span></div>`;
+              }
+           }
+           document.getElementById(`diff-stats-${k}`).innerHTML = statsHTML;
         });
-        const weightData = targetData.map(r => r.weight);
-        const sizeData = targetData.map(r => r.length * r.thickness);
 
-        myChartInstance.data.labels = labels;
-        myChartInstance.data.datasets[0].data = weightData;
-        myChartInstance.data.datasets[1].data = sizeData;
+        const photoSec = document.getElementById('dash-photo-section');
+        const photoImg = document.getElementById('dash-photo');
+        if (target.photo) {
+          photoImg.src = target.photo;
+          photoSec.style.display = 'block';
+        } else {
+          photoSec.style.display = 'none';
+        }
+      }
+
+      document.getElementById('btn-prev-record').addEventListener('click', () => {
+        if(currentDisplayIndex > 0) { currentDisplayIndex--; updateDashboard(); }
+      });
+      document.getElementById('btn-next-record').addEventListener('click', () => {
+        if(currentDisplayIndex < records.length - 1) { currentDisplayIndex++; updateDashboard(); }
+      });
+
+      let myChartInstance = null;
+      function updateChart(rangeText = '1週') {
+        if (!myChartInstance || records.length === 0) return;
+        const now = new Date();
+        let limitMs = { '24h': 24*3600000, '3日': 3*24*3600000, '1週': 7*24*3600000, '全期間': Infinity }[rangeText];
+        
+        let filtered = records.filter(r => (now - new Date(r.time)) <= limitMs);
+        if (filtered.length === 0) filtered = [records[records.length - 1]];
+
+        myChartInstance.data.labels = filtered.map(r => {
+          const d = new Date(r.time);
+          return rangeText === '24h' ? `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : `${d.getMonth()+1}/${d.getDate()}`;
+        });
+        myChartInstance.data.datasets[0].data = filtered.map(r => r.weight);
+        myChartInstance.data.datasets[1].data = filtered.map(r => r.length * r.thickness);
         myChartInstance.update();
       }
 
@@ -763,278 +558,297 @@
         const ctx = document.getElementById('myChart').getContext('2d');
         myChartInstance = new Chart(ctx, {
           type: 'line',
-          data: {
-            labels: [], datasets: [
-              { label: '重量 (g)', data: [], borderColor: '#007AFF', backgroundColor: 'rgba(0, 122, 255, 0.1)', yAxisID: 'y', tension: 0.3, fill: true },
-              { label: 'サイズ指数', data: [], borderColor: '#6D4C41', borderDash: [5, 5], yAxisID: 'y1', tension: 0.3 }
-            ]
-          },
-          options: {
-            responsive: true, interaction: { mode: 'index', intersect: false },
-            scales: {
-              y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '重量 (g)'} },
-              y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'サイズ指数'}, grid: { drawOnChartArea: false } }
-            }
+          data: { labels: [], datasets: [
+              { label: '重量 (g)', data: [], borderColor: '#007AFF', backgroundColor: 'rgba(0,122,255,0.1)', yAxisID: 'y', tension: 0.3, fill: true },
+              { label: 'サイズ指数', data: [], borderColor: '#6D4C41', borderDash: [5,5], yAxisID: 'y1', tension: 0.3 }
+          ]},
+          options: { responsive: true, interaction: { mode: 'index', intersect: false },
+            scales: { y: { type: 'linear', position: 'left', title: {display: true, text: '重量(g)'} }, y1: { type: 'linear', position: 'right', title: {display: true, text: '指数'}, grid: { drawOnChartArea: false } } }
           }
         });
-        updateChart('1週'); // 初期描画
+        updateChart('1週');
       }
 
-      // グラフの期間切り替えボタン処理
       const filterBtns = document.querySelectorAll('.filter-btn');
-      filterBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          filterBtns.forEach(b => b.classList.remove('active'));
-          e.target.classList.add('active');
-          updateChart(e.target.textContent);
+      filterBtns.forEach(btn => btn.addEventListener('click', (e) => {
+        filterBtns.forEach(b => b.classList.remove('active')); e.target.classList.add('active'); updateChart(e.target.textContent);
+      }));
+
+      document.getElementById('btn-export-json').addEventListener('click', () => {
+        if(records.length === 0) return showToast('データがありません');
+        const dataStr = JSON.stringify(records, null, 2);
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `modama_backup_${new Date().getTime()}.json`;
+        a.click(); URL.revokeObjectURL(url);
+        showToast('バックアップをダウンロードしました');
+      });
+
+      document.getElementById('btn-import-json').addEventListener('click', () => document.getElementById('file-import-json').click());
+      document.getElementById('file-import-json').addEventListener('change', (e) => {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const imported = JSON.parse(ev.target.result);
+            if(!Array.isArray(imported)) throw new Error("Invalid format");
+            records = imported.sort((a, b) => new Date(a.time) - new Date(b.time));
+            await clearAllDB();
+            for(const r of records) await saveRecordToDB(r);
+            currentDisplayIndex = records.length - 1; updateDashboard();
+            if(myChartInstance) updateChart(document.querySelector('.filter-btn.active').textContent);
+            showToast('✅ データを復元しました');
+          } catch(err) { showToast('⚠️ 読み込みに失敗しました'); }
+          e.target.value = '';
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById('btn-export-csv').addEventListener('click', () => {
+        if(records.length===0) return showToast('データがありません');
+        let csv = 'Time,Weight(g),Length(mm),Thickness(mm)\n';
+        records.forEach(r => { csv += `${r.time},${r.weight},${r.length},${r.thickness}\n`; });
+        const blob = new Blob([csv], {type: 'text/csv'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'modama_data.csv';
+        a.click(); showToast('CSVをエクスポートしました');
+      });
+
+      const confirmModal = document.getElementById('confirm-dialog');
+      let confirmAction = null;
+      function showConfirm(title, msg, onOk) {
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-msg').textContent = msg;
+        confirmAction = onOk; confirmModal.style.display = 'flex';
+      }
+      document.getElementById('btn-confirm-cancel').addEventListener('click', () => confirmModal.style.display = 'none');
+      document.getElementById('btn-confirm-ok').addEventListener('click', () => { confirmModal.style.display = 'none'; if(confirmAction) confirmAction(); });
+
+      document.getElementById('btn-delete-all').addEventListener('click', () => {
+        showConfirm('全データ削除', 'すべての記録と写真が消去されます。本当によろしいですか？', async () => {
+          records = []; currentDisplayIndex = -1;
+          await clearAllDB(); updateDashboard();
+          if(myChartInstance) updateChart('1週');
+          showToast('データをすべて削除しました');
         });
       });
 
-      // 初期ダッシュボード描画
-      updateDashboard();
+      const cameraModal = document.getElementById('camera-modal');
+      const videoEl = document.getElementById('camera-preview');
+      const overlayEl = document.getElementById('day0-overlay');
+      const zoomSlider = document.getElementById('zoom-slider');
+      const opacitySlider = document.getElementById('opacity-slider');
+      let currentStream = null;
+      let pendingPhotoBase64 = null;
 
+      async function openCamera() {
+        cameraModal.classList.add('show');
+        
+        if(records.length > 0 && records[0].photo) {
+          overlayEl.src = records[0].photo; overlayEl.style.display = 'block';
+          document.getElementById('day0-slider-container').style.display = 'flex';
+        } else {
+          overlayEl.style.display = 'none'; document.getElementById('day0-slider-container').style.display = 'none';
+        }
 
-      // ==========================================
-      // LINE出力機能
-      // ==========================================
-      let isPhotoTaken = false;
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+          try {
+            const perm = await DeviceOrientationEvent.requestPermission();
+            if(perm === 'granted') window.addEventListener('deviceorientation', handleOrientation);
+          } catch(e){}
+        } else {
+          window.addEventListener('deviceorientation', handleOrientation);
+        }
+
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          videoEl.srcObject = currentStream;
+          
+          const track = currentStream.getVideoTracks()[0];
+          const caps = track.getCapabilities();
+          if (caps.zoom) {
+            zoomSlider.min = caps.zoom.min; zoomSlider.max = caps.zoom.max; zoomSlider.step = caps.zoom.step;
+            zoomSlider.value = track.getSettings().zoom || 1;
+            zoomSlider.oninput = () => track.applyConstraints({advanced: [{zoom: zoomSlider.value}]});
+          } else {
+            zoomSlider.oninput = () => { videoEl.style.transform = `scale(${zoomSlider.value})`; };
+          }
+        } catch (err) { showToast('カメラを利用できません'); }
+      }
+
+      document.getElementById('btn-camera-close').addEventListener('click', () => {
+        cameraModal.classList.remove('show');
+        if(currentStream) currentStream.getTracks().forEach(t => t.stop());
+        window.removeEventListener('deviceorientation', handleOrientation);
+        videoEl.style.transform = 'scale(1)'; zoomSlider.value = 1;
+      });
+
+      opacitySlider.addEventListener('input', (e) => { overlayEl.style.opacity = e.target.value / 100; });
+
+      const bubble = document.getElementById('leveler-bubble');
+      function handleOrientation(e) {
+        let b = e.beta || 0; let g = e.gamma || 0;
+        let top = Math.max(-30, Math.min(30, b)) + 30;
+        let left = Math.max(-30, Math.min(30, g)) + 30;
+        
+        bubble.style.top = `calc(50% - 30px + ${top}px)`;
+        bubble.style.left = `calc(50% - 30px + ${left}px)`;
+        
+        if (Math.abs(b) < 2 && Math.abs(g) < 2) bubble.classList.add('level');
+        else bubble.classList.remove('level');
+      }
+
+      document.getElementById('btn-shutter').addEventListener('click', () => {
+        const canvas = document.getElementById('capture-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = videoEl.videoWidth || 640; canvas.height = videoEl.videoHeight || 480;
+        
+        const z = parseFloat(zoomSlider.value) || 1;
+        const sWidth = canvas.width / z; const sHeight = canvas.height / z;
+        const sx = (canvas.width - sWidth) / 2; const sy = (canvas.height - sHeight) / 2;
+        
+        ctx.drawImage(videoEl, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        
+        pendingPhotoBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        document.getElementById('camera-thumb').src = pendingPhotoBase64;
+        showToast('📷 写真を一時保存しました。(保存ボタンで確定します)');
+      });
 
       function exportToLine() {
         if (records.length === 0) return showToast('出力するデータがありません');
-        
-        const latest = records[records.length - 1];
+        const target = records[currentDisplayIndex > -1 ? currentDisplayIndex : records.length - 1];
         const prev = records.length > 1 ? records[records.length - 2] : null;
 
-        const dateStr = new Date(latest.time).toLocaleString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+        const dateStr = new Date(target.time).toLocaleString('ja-JP', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
         const timeElapsed = document.getElementById('header-time').textContent;
-        const photoStatus = isPhotoTaken ? 'あり' : 'なし';
 
-        // 差分計算用ヘルパー（前回データが存在しない場合は空文字を返す）
         const getDiffText = (cur, pre, unit) => {
-           if (!pre && pre !== 0) return '';
+           if (!pre) return `[ 初回記録 ]`;
            const diff = cur - pre;
-           const percent = pre !== 0 ? (diff / pre) * 100 : 0;
            const sign = diff > 0 ? '▲ +' : (diff < 0 ? '▼ ' : '±');
-           return `\n[ 前回比: ${sign}${Math.abs(diff).toFixed(2)}${unit} (${sign}${Math.abs(percent).toFixed(1)}%) ]`;
+           return `[ 前回比: ${sign}${Math.abs(diff).toFixed(2)}${unit} ]`;
         };
-
-        let speedText = '';
-        if (prev) {
-          const hours = (new Date(latest.time) - new Date(prev.time)) / (1000 * 60 * 60);
-          if (hours > 0) {
-            const speed = (latest.weight - prev.weight) / hours;
-            speedText = `\n⏱ 重量変化速度: ${speed > 0 ? '+' : ''}${speed.toFixed(2)} g/h`;
-          }
-        }
 
         const text = `🌱 【🟤モダマ観察記録】
 計測日時: ${dateStr}
 （浸水から ${timeElapsed}）
 
-⚖️ 重さ: ${latest.weight.toFixed(2)} g${getDiffText(latest.weight, prev ? prev.weight : null, 'g')}${speedText}
+秤 重さ: ${target.weight.toFixed(2)} g
+${getDiffText(target.weight, prev ? prev.weight : null, 'g')}
+└ 実測値: (${formatRawValues(target.raw?.weight)})
 
-📏 長さ: ${latest.length.toFixed(2)} mm${getDiffText(latest.length, prev ? prev.length : null, 'mm')}
+📏 長さ: ${target.length.toFixed(2)} mm
+${getDiffText(target.length, prev ? prev.length : null, 'mm')}
 
-🧊 厚さ: ${latest.thickness.toFixed(2)} mm${getDiffText(latest.thickness, prev ? prev.thickness : null, 'mm')}
-📷 写真: ${photoStatus}`;
+🧊 厚さ: ${target.thickness.toFixed(2)} mm
+${getDiffText(target.thickness, prev ? prev.thickness : null, 'mm')}
+📷 写真: ${target.photo ? 'あり' : 'なし'}`;
 
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(text).then(() => showToast('✅ LINE用レポートをコピーしました')).catch(() => showToast('コピーに失敗しました'));
-        } else {
-          showToast('お使いのブラウザはコピー機能に対応していません');
-        }
+          navigator.clipboard.writeText(text).then(()=>showToast('✅ LINE用レポートをコピー')).catch(()=>showToast('コピー失敗'));
+        } else { showToast('未対応ブラウザです'); }
       }
 
-      // ==========================================
-      // その他機能群
-      // ==========================================
-      function showToast(message) {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = 'toast'; toast.textContent = message;
-        container.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
-      }
-
-      const cameraModal = document.getElementById('camera-modal');
-      const videoElement = document.getElementById('camera-preview');
-      let currentStream = null;
-      async function openCamera() {
-        cameraModal.classList.add('show');
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-          currentStream = stream; videoElement.srcObject = stream;
-        } catch (err) { showToast('⚠️ カメラが利用できません。'); }
-      }
-      document.getElementById('btn-camera-close').addEventListener('click', () => {
-        cameraModal.classList.remove('show');
-        if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); videoElement.srcObject = null; }
-      });
-      document.getElementById('btn-shutter').addEventListener('click', () => {
-        isPhotoTaken = true; showToast('📷 写真を記録しました');
-      });
-
-
-      // ==========================================
-      // 測定入力ロジックと保存処理
-      // ==========================================
       const limits = { weight: 5, length: 4, thickness: 4 };
-      const units = { weight: 'g', length: 'mm', thickness: 'mm' };
-      
-      let state = {
-        activeTab: 'weight', activeRowIndex: 0,
-        data: { weight: ['', '', '', '', ''], length: ['', '', '', ''], thickness: ['', '', '', ''] },
-        rawInputs: { weight: [], length: [], thickness: [] } // LINE出力用等に生データを残す場合
-      };
-
+      let state = { activeTab: 'weight', activeRowIndex: 0, data: { weight: ['','','','',''], length: ['','','',''], thickness: ['','','',''] } };
       const tabs = document.querySelectorAll('.tab-item');
-      const container = document.getElementById('input-rows-container');
-      const avgDisplay = document.getElementById('average-display');
-      const numpad = document.getElementById('custom-numpad');
-      const datetimeInput = document.getElementById('measure-datetime');
+      const inputContainer = document.getElementById('input-rows-container');
       
-      function setDatetimeInputToNow() {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        datetimeInput.value = now.toISOString().slice(0, 16);
-      }
-
-      document.getElementById('btn-start-measure').addEventListener('click', () => {
-        setDatetimeInputToNow();
-      });
-
-      tabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-          tabs.forEach(t => t.classList.remove('active'));
-          e.currentTarget.classList.add('active');
-          state.activeTab = e.currentTarget.dataset.tab;
-          state.activeRowIndex = 0;
-          renderInputSheet();
-        });
-      });
-
-      numpad.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('numpad-btn')) return;
-        const key = e.target.dataset.key;
-        if (key) handleNumpadInput(key);
-      });
-
-      // ★ 保存ボタン押下時：データ(records)に本当に保存し、グラフと連動させる ★
-      document.getElementById('btn-save').addEventListener('click', () => {
-        const selectedTime = datetimeInput.value;
-        if (!selectedTime) return showToast('測定日時を指定してください');
-
-        const wAvg = calculateAverage(state.data['weight']);
-        const lAvg = calculateAverage(state.data['length']);
-        const tAvg = calculateAverage(state.data['thickness']);
-
-        // 1つも入力されていない場合はキャンセル扱い
-        if (!wAvg && !lAvg && !tAvg) {
-            showToast('入力データがありません');
-            return;
-        }
-
-        // 最新のデータを取得（未入力項目の引き継ぎ用）
-        const lastRecord = records.length > 0 ? records[records.length - 1] : { weight: 0, length: 0, thickness: 0 };
-
-        // 新しい記録オブジェクトを生成
-        const newRecord = {
-            time: new Date(selectedTime).toISOString(),
-            weight: wAvg ? parseFloat(wAvg) : lastRecord.weight,
-            length: lAvg ? parseFloat(lAvg) : lastRecord.length,
-            thickness: tAvg ? parseFloat(tAvg) : lastRecord.thickness,
-            isDay0: false
-        };
-
-        // 配列に追加し、日時順にソートする
-        records.push(newRecord);
-        records.sort((a, b) => new Date(a.time) - new Date(b.time));
-
-        // ダッシュボードとグラフを更新
-        updateDashboard();
-        if (myChartInstance) {
-            // 現在選択されている期間フィルターの文字を取得して再描画
-            const activeFilter = document.querySelector('.filter-btn.active').textContent;
-            updateChart(activeFilter);
-        }
-
-        showToast('✅ 測定データを保存しました');
-        resetInputData();
-      });
-
-      document.getElementById('btn-cancel').addEventListener('click', resetInputData);
-
-      function handleNumpadInput(key) {
-        const tab = state.activeTab;
-        let currentVal = state.data[tab][state.activeRowIndex];
-
-        if (key === 'bs') currentVal = currentVal.slice(0, -1);
-        else if (key === 'next') { if (state.activeRowIndex < limits[tab] - 1) state.activeRowIndex++; }
-        else if (key === '.') { if (!currentVal.includes('.')) currentVal += (currentVal === '' ? '0.' : '.'); }
-        else {
-          if (currentVal.includes('.')) { if (currentVal.split('.')[1].length >= 2) return; }
-          if (currentVal.length >= 6) return;
-          currentVal += key;
-        }
-
-        if (key !== 'next') state.data[tab][state.activeRowIndex] = currentVal;
-        renderInputSheet();
-      }
-
-      function calculateOutliers(values) {
-        const nums = values.filter(v => v !== '' && !isNaN(parseFloat(v))).map(Number);
-        if (nums.length < 3) return Array(values.length).fill(false);
-        const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-        const stdDev = Math.sqrt(nums.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / nums.length);
-        if (stdDev === 0) return Array(values.length).fill(false);
-        return values.map(v => (v === '' || isNaN(parseFloat(v))) ? false : Math.abs((Number(v) - avg) / stdDev) >= 2);
-      }
-
-      function calculateAverage(values) {
-         const nums = values.filter(v => v !== '' && !isNaN(parseFloat(v))).map(Number);
-         return nums.length === 0 ? null : (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(2);
-      }
-
       function renderInputSheet() {
-        const tab = state.activeTab;
-        const values = state.data[tab];
-        document.getElementById('max-measure-text').textContent = `最大${limits[tab]}回測定`;
+        const tab = state.activeTab; const values = state.data[tab];
+        document.getElementById('max-measure-text').textContent = `最大${limits[tab]}回`;
         const avg = calculateAverage(values);
-        avgDisplay.textContent = avg ? `平均: ${avg} ${units[tab]}` : '平均: -';
-
-        container.innerHTML = '';
+        document.getElementById('average-display').textContent = avg ? `平均: ${avg}` : '平均: -';
+        inputContainer.innerHTML = '';
         const outliers = calculateOutliers(values);
 
-        for (let i = 0; i < limits[tab]; i++) {
-          const isActive = i === state.activeRowIndex;
-          const isEmpty = values[i] === '';
-          
+        for (let i=0; i<limits[tab]; i++) {
+          const isActive = i === state.activeRowIndex; const isEmpty = values[i] === '';
           const row = document.createElement('div');
           row.className = `input-row ${isActive ? 'active' : ''} ${outliers[i] ? 'outlier' : ''}`;
           if (isEmpty && !isActive) row.style.opacity = '0.5';
           row.addEventListener('click', () => { state.activeRowIndex = i; renderInputSheet(); });
-
-          row.innerHTML = `
-            <div class="input-label-area">
-              <span class="input-label">${i + 1}回目</span>
-              ${outliers[i] ? '<span class="outlier-badge">⚠ 外れ値候補</span>' : ''}
-            </div>
-            <div class="input-value-area">
-              <span class="input-value mono-num ${isActive ? 'cursor-blink' : ''}">${isEmpty && !isActive ? '-' : values[i]}</span>
-              ${(!isEmpty || isActive) ? `<span class="text-sub">${units[tab]}</span>` : ''}
-            </div>`;
-          container.appendChild(row);
+          row.innerHTML = `<div class="input-label-area"><span class="input-label">${i+1}回目</span>${outliers[i]?'<span class="outlier-badge">⚠</span>':''}</div>
+                           <div class="input-value-area"><span class="input-value mono-num ${isActive?'cursor-blink':''}">${isEmpty&&!isActive?'-':values[i]}</span></div>`;
+          inputContainer.appendChild(row);
         }
       }
 
-      function resetInputData() {
-         state.data = { weight: ['', '', '', '', ''], length: ['', '', '', ''], thickness: ['', '', '', ''] };
-         state.activeTab = 'weight'; state.activeRowIndex = 0;
-         tabs.forEach(t => t.classList.remove('active')); tabs[0].classList.add('active');
-         renderInputSheet();
+      tabs.forEach(tab => tab.addEventListener('click', (e) => {
+        tabs.forEach(t => t.classList.remove('active')); e.currentTarget.classList.add('active');
+        state.activeTab = e.currentTarget.dataset.tab; state.activeRowIndex = 0; renderInputSheet();
+      }));
+
+      document.getElementById('custom-numpad').addEventListener('click', (e) => {
+        if (!e.target.classList.contains('numpad-btn')) return;
+        const key = e.target.dataset.key;
+        if (!key) return;
+        
+        const tab = state.activeTab; let val = state.data[tab][state.activeRowIndex];
+        if (key === 'bs') val = val.slice(0, -1);
+        else if (key === 'next') { if(state.activeRowIndex < limits[tab]-1) state.activeRowIndex++; }
+        else if (key === '.') { if(!val.includes('.')) val += val===''?'0.':'.'; }
+        else { if(val.includes('.') && val.split('.')[1].length>=2) return; if(val.length>=6) return; val += key; }
+        if (key !== 'next') state.data[tab][state.activeRowIndex] = val;
+        renderInputSheet();
+      });
+
+      function calculateAverage(vals) { const nums=vals.filter(v=>v!==''&&!isNaN(v)).map(Number); return nums.length? (nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(2):null; }
+      function calculateOutliers(vals) {
+        const nums=vals.filter(v=>v!==''&&!isNaN(v)).map(Number); if(nums.length<3) return Array(vals.length).fill(false);
+        const avg=nums.reduce((a,b)=>a+b,0)/nums.length; const sd=Math.sqrt(nums.reduce((a,b)=>a+Math.pow(b-avg,2),0)/nums.length);
+        if(sd===0) return Array(vals.length).fill(false);
+        return vals.map(v=>(v===''||isNaN(v))?false:Math.abs((Number(v)-avg)/sd)>=2);
       }
-      
-      // 初期化処理
+
+      document.getElementById('btn-start-measure').addEventListener('click', () => {
+        const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('measure-datetime').value = now.toISOString().slice(0,16);
+      });
+
+      document.getElementById('btn-cancel').addEventListener('click', () => {
+        state.data = { weight: ['','','','',''], length: ['','','',''], thickness: ['','','',''] };
+        state.activeRowIndex = 0; pendingPhotoBase64 = null;
+        document.getElementById('camera-thumb').src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+        renderInputSheet();
+      });
+
+      document.getElementById('btn-save').addEventListener('click', async () => {
+        const time = document.getElementById('measure-datetime').value;
+        if(!time) return showToast('測定日時を指定してください');
+
+        const wAvg = calculateAverage(state.data.weight);
+        const lAvg = calculateAverage(state.data.length);
+        const tAvg = calculateAverage(state.data.thickness);
+        
+        if(!wAvg && !lAvg && !tAvg && !pendingPhotoBase64) return showToast('入力データか写真がありません');
+        
+        const last = records.length > 0 ? records[records.length-1] : {weight:0, length:0, thickness:0};
+        const newRecord = {
+            time: new Date(time).toISOString(),
+            weight: wAvg ? parseFloat(wAvg) : last.weight,
+            length: lAvg ? parseFloat(lAvg) : last.length,
+            thickness: tAvg ? parseFloat(tAvg) : last.thickness,
+            raw: {
+               weight: [...state.data.weight],
+               length: [...state.data.length],
+               thickness: [...state.data.thickness]
+            },
+            photo: pendingPhotoBase64 || null
+        };
+
+        records.push(newRecord);
+        records.sort((a,b) => new Date(a.time)-new Date(b.time));
+        
+        await saveRecordToDB(newRecord);
+        
+        currentDisplayIndex = records.length - 1;
+        updateDashboard();
+        if (myChartInstance) updateChart(document.querySelector('.filter-btn.active').textContent);
+        
+        showToast('✅ 記録を保存しました');
+        document.getElementById('btn-cancel').click();
+      });
+
       renderInputSheet();
     });
   </script>
